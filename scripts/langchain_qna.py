@@ -3,8 +3,6 @@ import sys
 import glob
 import re
 import importlib
-import helpers as h
-import langchain
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -12,6 +10,8 @@ from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
 from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+from langchain.llms import AzureOpenAI
 from typing import (
     AbstractSet,
     Any,
@@ -67,15 +67,11 @@ class LangchainQnA:
      ) -> List[Document]:
         """
         """
-        if isinstance(
-            self.chunking_interface, langchain.text_splitter.RecursiveCharacterTextSplitter
-        ):   
+        if self.chunking_interface == RecursiveCharacterTextSplitter:   
             data_splitter = RecursiveCharacterTextSplitter(
                 chunk_size = chunk_size, chunk_overlap = chunk_overlap
             )           
-        if isinstance(
-            self.chunking_interface, langchain.text_splitter.TextSplitter
-        ):   
+        if self.chunking_interface == TextSplitter:         
             data_splitter = TextSplitter(
                 chunk_size = chunk_size, chunk_overlap = chunk_overlap
             )
@@ -84,13 +80,17 @@ class LangchainQnA:
     
     def get_vectorstore(
         self,
-        chunked_data,
+        chunked_data: List[Document],
+        vectorstore_engine: str,
     ) -> Chroma:
         """
         """
-        if isinstance(self.embedding_model, OpenAIEmbeddings):  
-            embedding_model = OpenAIEmbeddings()
-        if isinstance(self.embedding_model, HuggingFaceHubEmbeddings):  
+        if self.embedding_model == OpenAIEmbeddings :
+            if os.getenv('OPENAI_API_TYPE') == "azure":  
+                embedding_model = OpenAIEmbeddings(deployment=vectorstore_engine)
+            if os.getenv('OPENAI_API_TYPE') == "openai":                
+                embedding_model = OpenAIEmbeddings()
+        if self.embedding_model == HuggingFaceHubEmbeddings:  
             embedding_model = HuggingFaceHubEmbeddings()            
         vectorstore = Chroma.from_documents(
             documents=chunked_data, embedding=embedding_model
@@ -101,13 +101,24 @@ class LangchainQnA:
         self,
         vectorstore: Chroma,
         llm_model: str,
+        llm_engine: str,        
         temperature: int,
+        search_type: str,
+        **retrieval_kwargs: Any,
     ) -> RetrievalQA:
         """
         """
-        base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)            
+        if os.getenv('OPENAI_API_TYPE') == "azure":        
+            base_llm = AzureOpenAI(
+                engine=llm_engine, model_name=llm_model, temperature=temperature
+            )
+        if os.getenv('OPENAI_API_TYPE') == "openai":  
+            base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
         qna_chain = RetrievalQA.from_chain_type(
-            base_llm, retriever=vectorstore.as_retriever()
+            base_llm, 
+            retriever=vectorstore.as_retriever(
+                search_type=search_type, search_kwargs=retrieval_kwargs
+            )
         )
         return qna_chain
 
@@ -117,16 +128,22 @@ class LangchainQnA:
         web_list: Optional[List[str]] = [], 
         chunk_size: int = 2000, 
         chunk_overlap: int = 0, 
-        llm_model: str = "gpt-3.5-turbo", 
-        temperature: int = 0,  
+        vectorstore_engine: str = "Finbot-embedding",        
+        llm_model: str = "text-davinci-002",
+        llm_engine: str = "finbot-gpt",
+        temperature: int = 0,
+        search_type: str = 'mmr',
+        **retrieval_kwargs: Any,
     ):
         """
         Main function to the chain for answering questions
         """
         loaded_data = self.get_loaded_data(pdf_list, web_list)
         chunked_data = self.get_chunked_data(loaded_data, chunk_size, chunk_overlap)
-        vectorstore = self.get_vectorstore (chunked_data)
-        qna_chain = self.qna_chain(vectorstore, llm_model, temperature)
+        vectorstore = self.get_vectorstore(chunked_data, vectorstore_engine)
+        qna_chain = self.get_qna_chain(
+            vectorstore, llm_model, llm_engine, temperature, search_type, **retrieval_kwargs
+        )
         return qna_chain
 
 if __name__ == '__main__':
@@ -136,10 +153,16 @@ if __name__ == '__main__':
     web_list = sys.argv[4]
     chunk_size = sys.argv[5]
     chunk_overlap = sys.argv[6]
-    llm_model = sys.argv[7]
-    temperature = sys.argv[8]
+    vectorstore_engine = sys.argv[7]
+    llm_model = sys.argv[8]
+    llm_engine  = sys.argv[9]    
+    temperature = sys.argv[10]
+    search_type = sys.argv[11]
+    retrieval_kwargs = sys.argv[12]
+    #QnA Chain
     langchain_qna = LangchainQnA(chunking_interface, embedding_model)
     qna_chain = langchain_qna.main_function(
-        pdf_list, web_list, chunk_size, chunk_overlap, llm_model, temperature
+        pdf_list, web_list, chunk_size, chunk_overlap, vectorstore_engine,
+        llm_model, llm_engine, temperature, search_type, **retrieval_kwargs
     )
     
