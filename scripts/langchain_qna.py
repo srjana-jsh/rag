@@ -40,6 +40,9 @@ class LangchainQnA:
     ):
         """
         """
+        os.environ["OPENAI_API_TYPE"] = "azure"
+        os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+        os.environ["OPENAI_API_BASE"] = "https://test-chatgpt-flomoney.openai.azure.com/"
         self.chunking_interface = chunking_interface
         self.embedding_model = embedding_model
 
