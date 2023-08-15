@@ -52,7 +52,7 @@ chunking_interface = RecursiveCharacterTextSplitter
 embedding_model = OpenAIEmbeddings
 chunk_size = 8000
 chunk_overlap = 0
-vectorstore_engine = 'Finbot-embedding'
+vectorstore_engine = 'Finbot-embedding-2'
 llm_model = 'text-davinci-002'
 llm_engine = 'finbot-gpt'
 temperature = 0
@@ -75,7 +75,7 @@ elif input_option == "PDF Upload":
         save_folder = 'data/output/' + formatted_datetime
     uploaded_files = st.file_uploader("Upload multiple PDF files", type=["pdf"], accept_multiple_files=True)
     if uploaded_files:
-        save_button = st.button("Save Files")
+        save_button = st.button("Create_chatbot")
         if save_button:
             st.success(f"Formatted datetime: {formatted_datetime}")
             save_folder = 'data/output/' + formatted_datetime

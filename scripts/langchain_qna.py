@@ -81,6 +81,13 @@ class LangchainQnA:
         chunked_data = data_splitter.split_documents(loaded_data)          
         return chunked_data
     
+    def chunk_list(self, lst, chunk_size):
+        for i in range(0, len(lst), chunk_size):
+            yield lst[i:i + chunk_size]
+
+
+
+    
     def get_vectorstore(
         self,
         chunked_data: List[Document],
@@ -94,10 +101,26 @@ class LangchainQnA:
             if os.getenv('OPENAI_API_TYPE') == "openai":                
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:  
-            embedding_model = HuggingFaceHubEmbeddings()            
-        vectorstore = Chroma.from_documents(
-            documents=chunked_data, embedding=embedding_model
-        )
+            embedding_model = HuggingFaceHubEmbeddings()    
+        # Chunk size
+        chunk_size = 16
+
+        # Divide the list into chunks
+        input_chunks = list(self.chunk_list(all_inputs, chunk_size))
+
+        # Process each chunk
+        for chunk in input_chunks:
+            # Send the chunk to the OpenAI API or perform any other necessary actions
+                for input_item in chunk:
+                    # Process input_item
+                    print("Processing:", input_item)
+                    vectorstore = Chroma.from_documents(
+                                                            documents=input_item, 
+                                                            embedding=embedding_model
+                                                        )
+                    print("Finished processing chunk")
+        
+        
         return vectorstore
     
     def get_qna_chain(
