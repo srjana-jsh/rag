@@ -50,7 +50,7 @@ input_option = st.radio("Select Input Option", ["Text-based Content", "PDF Uploa
 
 chunking_interface = RecursiveCharacterTextSplitter
 embedding_model = OpenAIEmbeddings
-chunk_size = 8000
+chunk_size = 16000
 chunk_overlap = 0
 vectorstore_engine = 'Finbot-embedding-2'
 llm_model = 'text-davinci-002'

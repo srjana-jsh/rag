@@ -102,25 +102,11 @@ class LangchainQnA:
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:  
             embedding_model = HuggingFaceHubEmbeddings()    
-        # Chunk size
-        chunk_size = 16
-
-        # Divide the list into chunks
-        input_chunks = list(self.chunk_list(all_inputs, chunk_size))
-
-        # Process each chunk
-        for chunk in input_chunks:
-            # Send the chunk to the OpenAI API or perform any other necessary actions
-                for input_item in chunk:
-                    # Process input_item
-                    print("Processing:", input_item)
-                    vectorstore = Chroma.from_documents(
-                                                            documents=input_item, 
-                                                            embedding=embedding_model
-                                                        )
-                    print("Finished processing chunk")
         
-        
+        vectorstore = Chroma.from_documents(
+                                            documents=chunked_data, 
+                                            embedding=embedding_model
+                                        )
         return vectorstore
     
     def get_qna_chain(
