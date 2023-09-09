@@ -13,7 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 sys.path.append(os.path.join(os.getcwd(), 'scripts'))
 import langchain_qna as lc_qna
-importlib.reload(lc_qna)
+import constants as c
 import datetime
 
 # Set OpenAI API parameters
@@ -22,8 +22,6 @@ openai.api_type = "azure"
 openai.api_base = "https://test-chatgpt-flomoney.openai.azure.com/"
 openai.api_version = "2023-03-15-preview"
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-
 
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PdfReader(pdf_file)
@@ -47,17 +45,6 @@ st.title("Document-based Chatbot")
 
 # User input options: Text-based content, PDF upload, or URL upload
 input_option = st.radio("Select Input Option", ["Text-based Content", "PDF Upload"])
-
-chunking_interface = RecursiveCharacterTextSplitter
-embedding_model = OpenAIEmbeddings
-chunk_size = 16000
-chunk_overlap = 0
-vectorstore_engine = 'Finbot-embedding-2'
-llm_model = 'text-davinci-002'
-llm_engine = 'finbot-gpt'
-temperature = 0
-search_type = 'mmr'
-retrieval_kwargs = {'k': 6, 'lambda_mult': 0.5}
 
 langchain_qna = lc_qna.LangchainQnA(chunking_interface, embedding_model)
 
@@ -83,17 +70,11 @@ elif input_option == "PDF Upload":
                 os.makedirs(save_folder)
             save_uploaded_files(uploaded_files, save_folder)
         
-
-            
-        
             pdf_list = [_ for _ in glob.glob(os.path.join(os.path.join(os.getcwd(), save_folder), '*.pdf')) ]
             print (pdf_list)
             web_list = []
 
-            qna_chain = langchain_qna.main_function(
-                            pdf_list, web_list, chunk_size, chunk_overlap, vectorstore_engine,
-                            llm_model, llm_engine, temperature, search_type, **retrieval_kwargs
-                            )
+            qna_chain = langchain_qna.main_function()
 
             chatbot_responses = []  # Store chatbot responses
 

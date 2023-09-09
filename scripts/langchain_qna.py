@@ -3,6 +3,7 @@ import sys
 import glob
 import re
 import importlib
+import constants as c
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -12,6 +13,7 @@ from langchain.docstore.document import Document
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import AzureOpenAI
+from langchain.prompts import PromptTemplate
 from typing import (
     AbstractSet,
     Any,
@@ -40,9 +42,6 @@ class LangchainQnA:
     ):
         """
         """
-        os.environ["OPENAI_API_TYPE"] = "azure"
-        os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
-        os.environ["OPENAI_API_BASE"] = "https://test-chatgpt-flomoney.openai.azure.com/"
         self.chunking_interface = chunking_interface
         self.embedding_model = embedding_model
 
@@ -81,17 +80,11 @@ class LangchainQnA:
         chunked_data = data_splitter.split_documents(loaded_data)          
         return chunked_data
     
-    def chunk_list(self, lst, chunk_size):
-        for i in range(0, len(lst), chunk_size):
-            yield lst[i:i + chunk_size]
-
-
-
-    
     def get_vectorstore(
         self,
         chunked_data: List[Document],
         vectorstore_engine: str,
+        chunks_max: int,
     ) -> Chroma:
         """
         """
@@ -101,12 +94,12 @@ class LangchainQnA:
             if os.getenv('OPENAI_API_TYPE') == "openai":                
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:  
-            embedding_model = HuggingFaceHubEmbeddings()    
-        
-        vectorstore = Chroma.from_documents(
-                                            documents=chunked_data, 
-                                            embedding=embedding_model
-                                        )
+            embedding_model = HuggingFaceHubEmbeddings()  
+        for c in range(0, len(chunked_data), chunks_max):
+            vectorstore = Chroma.from_documents(
+                documents = chunked_data[c: c + chunks_max], 
+                embedding = embedding_model
+            )            
         return vectorstore
     
     def get_qna_chain(
@@ -116,13 +109,26 @@ class LangchainQnA:
         llm_engine: str,        
         temperature: int,
         search_type: str,
+        answer_max_tokens: int,
+        source_documents: bool,
+        prompt_template_file: str,
+        prompt_input_variables: List[str],
+        prompt_role: str,
         **retrieval_kwargs: Any,
     ) -> RetrievalQA:
         """
         """
+        chain_prompt = PromptTemplate.from_file(
+            prompt_template_file,
+            input_variables=prompt_input_variables,
+            partial_variables={'role':prompt_role}
+        )
         if os.getenv('OPENAI_API_TYPE') == "azure":        
             base_llm = AzureOpenAI(
-                engine=llm_engine, model_name=llm_model, temperature=temperature
+                engine=llm_engine, 
+                model_name=llm_model, 
+                temperature=temperature, 
+                max_tokens=answer_max_tokens,
             )
         if os.getenv('OPENAI_API_TYPE') == "openai":  
             base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
@@ -130,51 +136,29 @@ class LangchainQnA:
             base_llm, 
             retriever=vectorstore.as_retriever(
                 search_type=search_type, search_kwargs=retrieval_kwargs
-            )
+            ),
+            chain_type_kwargs={"prompt": chain_prompt},
+            return_source_documents=source_documents,
         )
         return qna_chain
 
-    def main_function(
-        self, 
-        pdf_list: Optional[List[str]] = [], 
-        web_list: Optional[List[str]] = [], 
-        chunk_size: int = 2000, 
-        chunk_overlap: int = 0, 
-        vectorstore_engine: str = "Finbot-embedding",        
-        llm_model: str = "text-davinci-002",
-        llm_engine: str = "finbot-gpt",
-        temperature: int = 0,
-        search_type: str = 'mmr',
-        **retrieval_kwargs: Any,
-    ):
+    def main_function(self):
         """
         Main function to the chain for answering questions
         """
-        loaded_data = self.get_loaded_data(pdf_list, web_list)
-        chunked_data = self.get_chunked_data(loaded_data, chunk_size, chunk_overlap)
-        vectorstore = self.get_vectorstore(chunked_data, vectorstore_engine)
+        chunk_size = c.prompt_max//c.retrieval_kwargs['k']
+        loaded_data = self.get_loaded_data(c.pdf_list, c.web_list)
+        chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
+        vectorstore = self.get_vectorstore(chunked_data, c.vectorstore_engine, c.chunks_max)
         qna_chain = self.get_qna_chain(
-            vectorstore, llm_model, llm_engine, temperature, search_type, **retrieval_kwargs
+            vectorstore, c.llm_model, c.llm_engine, c.temperature, c.search_type, 
+            c.answer_max_tokens, c.source_documents, c.prompt_template_file,
+            c.prompt_input_variables, c.prompt_role, **c.retrieval_kwargs
         )
         return qna_chain
 
 if __name__ == '__main__':
-    chunking_interface = sys.argv[1]
-    embedding_model = sys.argv[2]
-    pdf_list = sys.argv[3]
-    web_list = sys.argv[4]
-    chunk_size = sys.argv[5]
-    chunk_overlap = sys.argv[6]
-    vectorstore_engine = sys.argv[7]
-    llm_model = sys.argv[8]
-    llm_engine  = sys.argv[9]    
-    temperature = sys.argv[10]
-    search_type = sys.argv[11]
-    retrieval_kwargs = sys.argv[12]
     #QnA Chain
-    langchain_qna = LangchainQnA(chunking_interface, embedding_model)
-    qna_chain = langchain_qna.main_function(
-        pdf_list, web_list, chunk_size, chunk_overlap, vectorstore_engine,
-        llm_model, llm_engine, temperature, search_type, **retrieval_kwargs
-    )
+    langchain_qna = LangchainQnA(c.chunking_interface, c.embedding_model)
+    qna_chain = langchain_qna.main_function()
     
