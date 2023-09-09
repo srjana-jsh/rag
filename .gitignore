@@ -119,3 +119,4 @@ credentials
 .DS_Store
 
 # General
+data/output/
