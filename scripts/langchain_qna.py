@@ -3,7 +3,12 @@ import sys
 import glob
 import re
 import importlib
-import constants as c
+import langchain
+##### change path for getting constants to test in notebook #####
+# sys.path.append(os.path.join(os.getcwd(), '../scripts'))
+# import constants as c
+from scripts import constants as c
+#################################################################
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -88,7 +93,7 @@ class LangchainQnA:
     ) -> Chroma:
         """
         """
-        if self.embedding_model == OpenAIEmbeddings :
+        if self.embedding_model == OpenAIEmbeddings:
             if os.getenv('OPENAI_API_TYPE') == "azure":  
                 embedding_model = OpenAIEmbeddings(deployment=vectorstore_engine)
             if os.getenv('OPENAI_API_TYPE') == "openai":                
@@ -118,11 +123,14 @@ class LangchainQnA:
     ) -> RetrievalQA:
         """
         """
-        chain_prompt = PromptTemplate.from_file(
-            prompt_template_file,
-            input_variables=prompt_input_variables,
-            partial_variables={'role':prompt_role}
-        )
+        if prompt_template_file is not None :
+            chain_prompt = PromptTemplate.from_file(
+                prompt_template_file,
+                input_variables=prompt_input_variables,
+#                 partial_variables={'role':prompt_role}
+            )
+        else:
+            chain_prompt = None            
         if os.getenv('OPENAI_API_TYPE') == "azure":        
             base_llm = AzureOpenAI(
                 engine=llm_engine, 
@@ -140,25 +148,26 @@ class LangchainQnA:
             chain_type_kwargs={"prompt": chain_prompt},
             return_source_documents=source_documents,
         )
+        print(f"prompttemplate : {qna_chain.combine_documents_chain.llm_chain.prompt}")
         return qna_chain
 
-    def main_function(self):
+    def main_function(self, pdf_list, web_list, prompt_template_file):
         """
         Main function to the chain for answering questions
         """
         chunk_size = c.prompt_max//c.retrieval_kwargs['k']
-        loaded_data = self.get_loaded_data(c.pdf_list, c.web_list)
+        loaded_data = self.get_loaded_data(pdf_list, web_list)
         chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
         vectorstore = self.get_vectorstore(chunked_data, c.vectorstore_engine, c.chunks_max)
         qna_chain = self.get_qna_chain(
             vectorstore, c.llm_model, c.llm_engine, c.temperature, c.search_type, 
-            c.answer_max_tokens, c.source_documents, c.prompt_template_file,
+            c.answer_max_tokens, c.source_documents, prompt_template_file,
             c.prompt_input_variables, c.prompt_role, **c.retrieval_kwargs
         )
         return qna_chain
 
 if __name__ == '__main__':
     #QnA Chain
-    langchain_qna = LangchainQnA(c.chunking_interface, c.embedding_model)
-    qna_chain = langchain_qna.main_function()
+    langchain_qna = LangchainQnA(chunking_interface, embedding_model)
+    qna_chain = langchain_qna.main_function(pdf_list, web_list, prompt_template_file)
     
