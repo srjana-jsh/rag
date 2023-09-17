@@ -1,5 +1,7 @@
 import fitz
 import re
+import os
+import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from typing import (
     AbstractSet,
@@ -46,3 +48,35 @@ def _text_splitter(chunk_size: int, chunk_overlap: int) -> TextSplitter:
     return RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
+
+def extract_text_from_pdf(pdf_file: str) -> str:
+    """
+    """
+    pdf_reader = PdfReader(pdf_file)
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+    return text
+
+def save_uploaded_files(uploaded_files: str, save_folder: str):
+    """
+    """
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+
+    for file in uploaded_files:
+        file_path = os.path.join(save_folder, file.name)
+        with open(file_path, "wb") as f:
+            f.write(file.read())
+        st.success(f"Saved file: {file_path}")
+
+def display_chat_message(sender: str, message: str):
+    """
+    Function to display chat messages
+    """
+    if sender == "user":
+        with st.chat_message(name="You", avatar="👨‍🎓"):
+            st.write(message)
+    elif sender == "bot":
+        with st.chat_message(name="FinBot", avatar="🤖"):
+            st.write(message)    
