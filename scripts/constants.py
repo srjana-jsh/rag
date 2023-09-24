@@ -15,6 +15,6 @@ search_type = 'mmr'
 chunks_max = 15
 answer_max_tokens = 512
 source_documents=True
-retrieval_kwargs = {'k': 6, 'lambda_mult': 0.5, 'fetch_k':10}
+retrieval_kwargs = {'k': 4, 'lambda_mult': 0.5, 'fetch_k':10}
 prompt_role = 'financial advisor'
 prompt_input_variables = ['context', 'question']
