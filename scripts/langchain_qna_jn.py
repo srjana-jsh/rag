@@ -97,9 +97,9 @@ class LangchainQnA:
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:  
             embedding_model = HuggingFaceHubEmbeddings()  
-        for c in range(0, len(chunked_data), chunks_max):
+        for _ in range(0, len(chunked_data), chunks_max):
             vectorstore = Chroma.from_documents(
-                documents = chunked_data[c: c + chunks_max], 
+                documents = chunked_data[_: _ + chunks_max], 
                 embedding = embedding_model
             )            
         return vectorstore
