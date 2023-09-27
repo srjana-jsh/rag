@@ -2,9 +2,9 @@ import os
 import sys
 import glob
 import re
-import importlib
 import langchain
-from scripts import constants as c
+sys.path.append(os.path.join(os.getcwd(), '../scripts'))
+import constants as c
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator

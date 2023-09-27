@@ -11,7 +11,7 @@ import glob
 import re
 import importlib
 import datetime
-from scripts import langchain_qna as lc_qna
+from scripts import qna_memory as qna_m
 from scripts import constants as c
 from scripts import helpers as h
 
@@ -26,7 +26,7 @@ st.title("Document-based Chatbot")
 # User input options: Text-based content, PDF upload, or URL upload
 input_option = st.radio("Select Input Option", ["Text-based Content", "PDF Upload"])
 
-langchain_qna = lc_qna.LangchainQnA(c.chunking_interface, c.embedding_model)
+qna_with_memory = qna_m.LangchainQnA(c.chunking_interface, c.embedding_model)
 
 if input_option == "Text-based Content":
     user_input = st.text_area("Enter text content")
@@ -52,15 +52,20 @@ elif input_option == "PDF Upload":
                 os.makedirs(save_folder)
             h.save_uploaded_files(uploaded_files, save_folder)
 
-            # prompt_template_file = os.path.join(os.getcwd(), 'scripts/prompt_template.txt')
-            prompt_template_file = None
+            qna_prompt_template = os.path.join(
+                os.getcwd(), 'scripts/qna_prompt_template.txt'
+            )
+#             prompt_template_file = None
+            condense_question_template = os.path.join(
+                os.getcwd(), 'scripts/condense_question_template.txt'
+            )
+            # condense_question_template = None            
             pdf_list = [
                 _ for _ in glob.glob(os.path.join(os.getcwd(), save_folder, "*.pdf"))
             ]
             web_list = []
-
-            qna_chain = langchain_qna.main_function(
-                pdf_list, web_list, prompt_template_file
+            qna_chain = qna_with_memory.main_function(
+                pdf_list, web_list, qna_prompt_template, condense_question_template
             )
             st.session_state.qna_chain = qna_chain
 
@@ -83,10 +88,8 @@ if user_input := st.chat_input("What would you like to ask FinBot?"):
     h.display_chat_message("user", user_input)
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": user_input})
-    response = st.session_state.qna_chain(
-        {"query": f"Based on the provided content, {user_input}"}
-    )
-    response = response["result"]
+    response = st.session_state.qna_chain({"question": user_input})
+    response = response["answer"]
     # Display chatbot response in chat container
     h.display_chat_message("bot", response)
     # Add chatbot response to chat history

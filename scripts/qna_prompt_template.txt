@@ -1,0 +1,8 @@
+Use the following context (delimited by <ctx></ctx>) to answer the question like a {role}:
+------
+<ctx>
+{context}
+</ctx>
+------
+{question}
+Answer:
