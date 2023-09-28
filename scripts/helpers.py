@@ -60,6 +60,7 @@ def extract_text_from_pdf(pdf_file: str) -> str:
 
 def save_uploaded_files(uploaded_files: str, save_folder: str):
     """
+    Function to save uploaded files to disk
     """
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
@@ -79,4 +80,4 @@ def display_chat_message(sender: str, message: str):
             st.write(message)
     elif sender == "bot":
         with st.chat_message(name="FinBot", avatar="🤖"):
-            st.write(message)    
+            st.caption(message)    

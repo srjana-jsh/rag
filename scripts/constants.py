@@ -5,7 +5,7 @@ from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 
 chunking_interface = RecursiveCharacterTextSplitter
 embedding_model = OpenAIEmbeddings
-prompt_max = 96000
+prompt_max = 48000
 chunk_overlap = 0
 vectorstore_engine = 'Finbot-embedding-2'
 llm_model = 'text-davinci-002'

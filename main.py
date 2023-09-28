@@ -88,8 +88,8 @@ if user_input := st.chat_input("What would you like to ask FinBot?"):
     h.display_chat_message("user", user_input)
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": user_input})
-    response = st.session_state.qna_chain({"question": user_input})
-    response = response["answer"]
+    result = st.session_state.qna_chain({"question": user_input})
+    response = result["answer"]
     # Display chatbot response in chat container
     h.display_chat_message("bot", response)
     # Add chatbot response to chat history
