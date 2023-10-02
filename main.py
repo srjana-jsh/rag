@@ -4,7 +4,6 @@ import os
 import requests
 import openai
 import base64
-
 # Note: The openai-python library support for Azure OpenAI is in preview.
 import sys
 import glob
@@ -14,6 +13,7 @@ import datetime
 from scripts import qna_memory as qna_m
 from scripts import constants as c
 from scripts import helpers as h
+from scripts import scraper as s
 
 # Set OpenAI API parameters
 os.environ["OPENAI_API_KEY"] = "6cdb659e5a9d402e80c212fe8ea26483"
@@ -24,10 +24,23 @@ os.environ["OPENAI_API_BASE"] = "https://test-chatgpt-flomoney.openai.azure.com/
 st.title("Document-based Chatbot")
 
 # User input options: Text-based content, PDF upload, or URL upload
-input_option = st.radio("Select Input Option", ["Text-based Content", "PDF Upload"])
+input_option = st.radio(
+    "Select Input Option", 
+    ["Text-based Content", "PDF Upload", "URL Upload"]
+)
+#prompt templates
+qna_prompt_template = os.path.join(
+    os.getcwd(), 'scripts/qna_prompt_template.txt'
+)
+# prompt_template_file = None
+condense_question_template = os.path.join(
+    os.getcwd(), 'scripts/condense_question_template.txt'
+)
+# condense_question_template = None
 
-qna_with_memory = qna_m.LangchainQnA(c.chunking_interface, c.embedding_model)
-
+#inputs from user
+web_list = []
+pdf_list = []
 if input_option == "Text-based Content":
     user_input = st.text_area("Enter text content")
 elif input_option == "PDF Upload":
@@ -48,26 +61,26 @@ elif input_option == "PDF Upload":
         if save_button:
             st.success(f"Formatted datetime: {formatted_datetime}")
             save_folder = "data/output/" + formatted_datetime
-            if not os.path.exists(save_folder):
-                os.makedirs(save_folder)
+            os.makedirs(save_folder, exist_ok=True)
             h.save_uploaded_files(uploaded_files, save_folder)
-
-            qna_prompt_template = os.path.join(
-                os.getcwd(), 'scripts/qna_prompt_template.txt'
-            )
-#             prompt_template_file = None
-            condense_question_template = os.path.join(
-                os.getcwd(), 'scripts/condense_question_template.txt'
-            )
-            # condense_question_template = None            
+            #pdfs for question-answering
             pdf_list = [
                 _ for _ in glob.glob(os.path.join(os.getcwd(), save_folder, "*.pdf"))
-            ]
-            web_list = []
-            qna_chain = qna_with_memory.main_function(
-                pdf_list, web_list, qna_prompt_template, condense_question_template
-            )
-            st.session_state.qna_chain = qna_chain
+            ]            
+elif input_option == "URL Upload":
+    user_input = st.text_area("Enter URL")
+    save_button = st.button("Save URL")
+    #web pages for question-answering
+    if save_button:
+        web_list = s.scrape_site(user_input)[:4]
+#chain for question-answering
+if len(web_list) > 0 or len(pdf_list) > 0:
+    qna_with_memory = qna_m.LangchainQnA(c.chunking_interface, c.embedding_model)
+    qna_chain = qna_with_memory.main_function(
+        pdf_list, web_list, qna_prompt_template, condense_question_template
+    )
+    web_list, pdf_list = [], []
+    st.session_state.qna_chain = qna_chain
 
 chatbot_responses = []  # Store chatbot responses
 

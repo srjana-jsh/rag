@@ -3,7 +3,8 @@ import sys
 import glob
 import re
 import langchain
-sys.path.append(os.path.join(os.getcwd(), '../scripts'))
+
+sys.path.append(os.path.join(os.getcwd(), "../scripts"))
 import constants as c
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
@@ -35,32 +36,30 @@ from typing import (
     cast,
 )
 
+
 class LangchainQnA:
-    
     def __init__(
         self,
         chunking_interface: Union[RecursiveCharacterTextSplitter, TextSplitter],
-        embedding_model: Union[OpenAIEmbeddings, HuggingFaceHubEmbeddings],        
+        embedding_model: Union[OpenAIEmbeddings, HuggingFaceHubEmbeddings],
     ):
-        """
-        """
+        """ """
         self.chunking_interface = chunking_interface
         self.embedding_model = embedding_model
 
     def get_loaded_data(
         self,
         pdf_list: Optional[List[str]],
-        web_list: Optional[List[str]],         
+        web_list: Optional[List[str]],
     ) -> List[Document]:
-        """
-        """
-        loaded_data = []        
+        """ """
+        loaded_data = []
         if len(pdf_list) > 0:
-            for pdf in pdf_list :            
-                loaded_data.extend(UnstructuredPDFLoader(pdf).load())        
+            for pdf in pdf_list:
+                loaded_data.extend(UnstructuredPDFLoader(pdf).load())
         if len(web_list) > 0:
-            for page in web_list :
-                loaded_data.extend(WebBaseLoader(page).load())                     
+            for page in web_list:
+                loaded_data.extend(WebBaseLoader(page).load())
         return loaded_data
 
     def get_chunked_data(
@@ -68,47 +67,44 @@ class LangchainQnA:
         loaded_data,
         chunk_size: int,
         chunk_overlap: int,
-     ) -> List[Document]:
-        """
-        """
-        if self.chunking_interface == RecursiveCharacterTextSplitter:   
+    ) -> List[Document]:
+        """ """
+        if self.chunking_interface == RecursiveCharacterTextSplitter:
             data_splitter = RecursiveCharacterTextSplitter(
-                chunk_size = chunk_size, chunk_overlap = chunk_overlap
-            )           
-        if self.chunking_interface == TextSplitter:         
-            data_splitter = TextSplitter(
-                chunk_size = chunk_size, chunk_overlap = chunk_overlap
+                chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
-        chunked_data = data_splitter.split_documents(loaded_data)          
+        if self.chunking_interface == TextSplitter:
+            data_splitter = TextSplitter(
+                chunk_size=chunk_size, chunk_overlap=chunk_overlap
+            )
+        chunked_data = data_splitter.split_documents(loaded_data)
         return chunked_data
-    
+
     def get_vectorstore(
         self,
         chunked_data: List[Document],
         vectorstore_engine: str,
         chunks_max: int,
     ) -> Chroma:
-        """
-        """
+        """ """
         if self.embedding_model == OpenAIEmbeddings:
-            if os.getenv('OPENAI_API_TYPE') == "azure":  
+            if os.getenv("OPENAI_API_TYPE") == "azure":
                 embedding_model = OpenAIEmbeddings(deployment=vectorstore_engine)
-            if os.getenv('OPENAI_API_TYPE') == "openai":                
+            if os.getenv("OPENAI_API_TYPE") == "openai":
                 embedding_model = OpenAIEmbeddings()
-        if self.embedding_model == HuggingFaceHubEmbeddings:  
-            embedding_model = HuggingFaceHubEmbeddings()  
+        if self.embedding_model == HuggingFaceHubEmbeddings:
+            embedding_model = HuggingFaceHubEmbeddings()
         for _ in range(0, len(chunked_data), chunks_max):
             vectorstore = Chroma.from_documents(
-                documents = chunked_data[_: _ + chunks_max], 
-                embedding = embedding_model
-            )            
+                documents=chunked_data[_ : _ + chunks_max], embedding=embedding_model
+            )
         return vectorstore
-    
+
     def get_qna_chain(
         self,
         vectorstore: Chroma,
         llm_model: str,
-        llm_engine: str,        
+        llm_engine: str,
         temperature: int,
         search_type: str,
         answer_max_tokens: int,
@@ -117,90 +113,103 @@ class LangchainQnA:
         qna_prompt_input: List[str],
         prompt_role: str,
         condense_question_template: str,
-        condense_question_input: List[str], 
+        condense_question_input: List[str],
         history_tokens: int,
         debug_mode: bool,
         **retrieval_kwargs: Any,
     ) -> RetrievalQA:
-        """
-        """
-        langchain.debug=True
-        #llm to use
-        if os.getenv('OPENAI_API_TYPE') == "azure":        
+        """ """
+        langchain.debug = True
+        # llm to use
+        if os.getenv("OPENAI_API_TYPE") == "azure":
             base_llm = AzureOpenAI(
-                engine=llm_engine, 
-                model_name=llm_model, 
-                temperature=temperature, 
+                engine=llm_engine,
+                model_name=llm_model,
+                temperature=temperature,
                 max_tokens=answer_max_tokens,
             )
-        if os.getenv('OPENAI_API_TYPE') == "openai":  
-            base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature) 
-        #custom prompt to pass to llm            
-        if qna_prompt_template is not None :
+        if os.getenv("OPENAI_API_TYPE") == "openai":
+            base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
+        # custom prompt to pass to llm
+        if qna_prompt_template is not None:
             qna_prompt = PromptTemplate.from_file(
                 qna_prompt_template,
                 input_variables=qna_prompt_input,
-                partial_variables={'role':prompt_role}
+                partial_variables={"role": prompt_role},
             )
         else:
-            qna_prompt = None    
-        #if chat history is to be used
+            qna_prompt = None
+        # if chat history is to be used
         if condense_question_template is not None:
-            #prompt to condense question into standalone question
+            # prompt to condense question into standalone question
             chat_prompt = PromptTemplate.from_file(
-                condense_question_template,
-                input_variables=condense_question_input
+                condense_question_template, input_variables=condense_question_input
             )
-            #memory type and token limit
+            # memory type and token limit
             memory = ConversationSummaryBufferMemory(
-                llm=base_llm, 
-                memory_key="chat_history", 
-                return_messages=True, 
-                max_token_limit=history_tokens
+                llm=base_llm,
+                memory_key="chat_history",
+                return_messages=True,
+                max_token_limit=history_tokens,
             )
-            #retrieval chain with memory
+            # retrieval chain with memory
             qna_chain = ConversationalRetrievalChain.from_llm(
-                base_llm, 
+                base_llm,
                 retriever=vectorstore.as_retriever(
                     search_type=search_type, search_kwargs=retrieval_kwargs
                 ),
                 memory=memory,
                 condense_question_prompt=chat_prompt,
                 combine_docs_chain_kwargs=dict(prompt=qna_prompt),
-#                 return_source_documents=source_documents,
+                #                 return_source_documents=source_documents,
             )
-        else :
-            #retrieval chain without memory            
+        else:
+            # retrieval chain without memory
             qna_chain = RetrievalQA.from_chain_type(
-                base_llm, 
+                base_llm,
                 retriever=vectorstore.as_retriever(
                     search_type=search_type, search_kwargs=retrieval_kwargs
                 ),
                 chain_type_kwargs={"prompt": qna_prompt},
                 return_source_documents=source_documents,
-            ) 
+            )
         return qna_chain
 
-    def main_function(self, pdf_list, web_list, qna_prompt_template, condense_question_template):
+    def main_function(
+        self, pdf_list, web_list, qna_prompt_template, condense_question_template
+    ):
         """
         Main function to the chain for answering questions
         """
-        chunk_size = c.prompt_max//c.retrieval_kwargs['k']
+        chunk_size = c.prompt_max // c.retrieval_kwargs["k"]
         loaded_data = self.get_loaded_data(pdf_list, web_list)
         chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
-        vectorstore = self.get_vectorstore(chunked_data, c.vectorstore_engine, c.chunks_max)
+        vectorstore = self.get_vectorstore(
+            chunked_data, c.vectorstore_engine, c.chunks_max
+        )
         qna_chain = self.get_qna_chain(
-            vectorstore, c.llm_model, c.llm_engine, c.temperature, c.search_type, 
-            c.answer_max_tokens, c.source_documents, qna_prompt_template,
-            c.qna_prompt_input, c.prompt_role, condense_question_template, c.condense_question_input,
-            c.history_tokens, c.debug_mode, **c.retrieval_kwargs
+            vectorstore,
+            c.llm_model,
+            c.llm_engine,
+            c.temperature,
+            c.search_type,
+            c.answer_max_tokens,
+            c.source_documents,
+            qna_prompt_template,
+            c.qna_prompt_input,
+            c.prompt_role,
+            condense_question_template,
+            c.condense_question_input,
+            c.history_tokens,
+            c.debug_mode,
+            **c.retrieval_kwargs,
         )
         return qna_chain
 
-if __name__ == '__main__':
-    #QnA Chain
+
+if __name__ == "__main__":
+    # QnA Chain
     langchain_qna = LangchainQnA(chunking_interface, embedding_model)
     qna_chain = langchain_qna.main_function(
         pdf_list, web_list, qna_prompt_template, condense_question_template
     )
-    
