@@ -11,10 +11,11 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
-from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import AzureOpenAI
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from typing import (
     AbstractSet,
     Any,
@@ -107,20 +108,18 @@ class LangchainQnA:
         search_type: str,
         answer_max_tokens: int,
         source_documents: bool,
-        prompt_template_file: str,
-        prompt_input_variables: List[str],
+        qna_prompt_template: str,
+        qna_prompt_input: List[str],
         prompt_role: str,
+        condense_question_template: str,
+        condense_question_input: List[str],
+        history_tokens: int,
+        debug_mode: bool,
         **retrieval_kwargs: Any,
     ) -> RetrievalQA:
         """ """
-        if prompt_template_file is not None:
-            chain_prompt = PromptTemplate.from_file(
-                prompt_template_file,
-                input_variables=prompt_input_variables,
-                #                 partial_variables={'role':prompt_role}
-            )
-        else:
-            chain_prompt = None
+        langchain.debug = True
+        # llm to use
         if os.getenv("OPENAI_API_TYPE") == "azure":
             base_llm = AzureOpenAI(
                 engine=llm_engine,
@@ -130,18 +129,54 @@ class LangchainQnA:
             )
         if os.getenv("OPENAI_API_TYPE") == "openai":
             base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
-        qna_chain = RetrievalQA.from_chain_type(
-            base_llm,
-            retriever=vectorstore.as_retriever(
-                search_type=search_type, search_kwargs=retrieval_kwargs
-            ),
-            chain_type_kwargs={"prompt": chain_prompt},
-            return_source_documents=source_documents,
-        )
-        print(f"prompttemplate : {qna_chain.combine_documents_chain.llm_chain.prompt}")
+        # custom prompt to pass to llm
+        if qna_prompt_template is not None:
+            qna_prompt = PromptTemplate.from_file(
+                qna_prompt_template,
+                input_variables=qna_prompt_input,
+                partial_variables={"role": prompt_role},
+            )
+        else:
+            qna_prompt = None
+        # if chat history is to be used
+        if condense_question_template is not None:
+            # prompt to condense question into standalone question
+            chat_prompt = PromptTemplate.from_file(
+                condense_question_template, input_variables=condense_question_input
+            )
+            # memory type and token limit
+            memory = ConversationSummaryBufferMemory(
+                llm=base_llm,
+                memory_key="chat_history",
+                return_messages=True,
+                max_token_limit=history_tokens,
+            )
+            # retrieval chain with memory
+            qna_chain = ConversationalRetrievalChain.from_llm(
+                base_llm,
+                retriever=vectorstore.as_retriever(
+                    search_type=search_type, search_kwargs=retrieval_kwargs
+                ),
+                memory=memory,
+                condense_question_prompt=chat_prompt,
+                combine_docs_chain_kwargs=dict(prompt=qna_prompt),
+                #                 return_source_documents=source_documents,
+            )
+        else:
+            # retrieval chain without memory
+            qna_chain = RetrievalQA.from_chain_type(
+                base_llm,
+                retriever=vectorstore.as_retriever(
+                    search_type=search_type, search_kwargs=retrieval_kwargs
+                ),
+                chain_type_kwargs={"prompt": qna_prompt},
+                return_source_documents=source_documents,
+            )
         return qna_chain
 
-    def main_function(self, pdf_list, web_list, prompt_template_file):
+    def main_function(
+        self, pdf_list, web_list, qna_prompt_template, condense_question_template
+    ):
         """
         Main function to the chain for answering questions
         """
@@ -159,9 +194,13 @@ class LangchainQnA:
             c.search_type,
             c.answer_max_tokens,
             c.source_documents,
-            prompt_template_file,
-            c.prompt_input_variables,
+            qna_prompt_template,
+            c.qna_prompt_input,
             c.prompt_role,
+            condense_question_template,
+            c.condense_question_input,
+            c.history_tokens,
+            c.debug_mode,
             **c.retrieval_kwargs,
         )
         return qna_chain
@@ -170,4 +209,6 @@ class LangchainQnA:
 if __name__ == "__main__":
     # QnA Chain
     langchain_qna = LangchainQnA(chunking_interface, embedding_model)
-    qna_chain = langchain_qna.main_function(pdf_list, web_list, prompt_template_file)
+    qna_chain = langchain_qna.main_function(
+        pdf_list, web_list, qna_prompt_template, condense_question_template
+    )
