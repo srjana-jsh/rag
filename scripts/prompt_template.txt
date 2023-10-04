@@ -1,0 +1,2 @@
+template="""{context}. Based on the provided content, {question}"""
+
