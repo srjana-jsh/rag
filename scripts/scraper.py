@@ -1,29 +1,32 @@
 import requests
-import pandas as pd
-import numpy as np
-import re
-import time
-import random
 import warnings
 from bs4 import BeautifulSoup
 
 warnings.filterwarnings("ignore")
 
+# log = logging.getLogger("logger")
+# log.setLevel(logging.INFO)
+# handler = logging.StreamHandler(sys.stdout)
+# handler.setLevel(logging.INFO)
+# formatter = logging.Formatter("[INFO] - %(message)s")
+# handler.setFormatter(formatter)
+# log.addHandler(handler)
+
 # Path: scraper.ipynb
-def get_soup(url):
+def get_soup(url, header_template):
     """
     Returns a BeautifulSoup object from a given url.
     """
-    response = requests.get(url)
+    response = requests.get(url, headers=header_template)
     soup = BeautifulSoup(response.text, "html5lib")
     return soup
 
 # Path: scraper.ipynb
-def get_links(url):
+def get_links(url, header_template):
     """
     Returns a list of links from a given url.
     """
-    soup = get_soup(url)
+    soup = get_soup(url, header_template)
     links = []
     for link in soup.find_all("a"):
         links.append(url + link.get("href")) if link.get("href") and link.get("href")[
@@ -32,18 +35,18 @@ def get_links(url):
     return links
 
 # Path: scraper.ipynb
-def get_links_from_list(url_list):
+def get_links_from_list(url_list, header_template):
     """
     Returns a list of links from a given list of urls.
     """
     links = []
     for url in url_list:
-        links.append(get_links(url))
+        links.extend(get_links(url, header_template))
     return links
 
 # Path: scraper.ipynb
-def scrape_site(url):
-    links = get_links_from_list([url])[0]
+def scrape_site(url, header_template):
+    links = list(set(get_links_from_list([url], header_template)))
     return links
 
 # print(scrape_site("https://www.mom.gov.sg/"))

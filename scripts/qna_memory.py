@@ -4,6 +4,7 @@ import glob
 import re
 import importlib
 import langchain
+import logging
 from scripts import constants as c
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
@@ -53,13 +54,18 @@ class LangchainQnA:
     ) -> List[Document]:
         """ """
         loaded_data = []
+        unfetched_urls = []
         if len(pdf_list) > 0:
             for pdf in pdf_list:
                 loaded_data.extend(UnstructuredPDFLoader(pdf).load())
         if len(web_list) > 0:
-            for page in web_list:
-                loaded_data.extend(WebBaseLoader(page).load())
-        return loaded_data
+            for url in web_list:
+                try:
+                    loaded_data.extend(WebBaseLoader(url).load())
+                except:
+                    unfetched_urls.append(url)
+                    continue
+        return loaded_data, unfetched_urls
 
     def get_chunked_data(
         self,
@@ -181,7 +187,7 @@ class LangchainQnA:
         Main function to the chain for answering questions
         """
         chunk_size = c.prompt_max // c.retrieval_kwargs["k"]
-        loaded_data = self.get_loaded_data(pdf_list, web_list)
+        loaded_data = self.get_loaded_data(pdf_list, web_list)[0]
         chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
         vectorstore = self.get_vectorstore(
             chunked_data, c.vectorstore_engine, c.chunks_max

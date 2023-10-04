@@ -59,7 +59,7 @@ def extract_text_from_pdf(pdf_file: str) -> str:
     return text
 
 
-def save_uploaded_files(uploaded_files: str, save_folder: str):
+def save_uploaded_files(uploaded_files: str, save_folder: str) -> None:
     """
     Function to save uploaded files to disk
     """
@@ -72,8 +72,7 @@ def save_uploaded_files(uploaded_files: str, save_folder: str):
             f.write(file.read())
         st.success(f"Saved file: {file_path}")
 
-
-def display_chat_message(sender: str, message: str):
+def display_chat_message(sender: str, message: str) -> None:
     """
     Function to display chat messages
     """
