@@ -1,16 +1,25 @@
 import requests
 import warnings
+import os
+import logging
+from datetime import datetime
 from bs4 import BeautifulSoup
 
+#Logging
 warnings.filterwarnings("ignore")
-
-# log = logging.getLogger("logger")
-# log.setLevel(logging.INFO)
-# handler = logging.StreamHandler(sys.stdout)
-# handler.setLevel(logging.INFO)
-# formatter = logging.Formatter("[INFO] - %(message)s")
-# handler.setFormatter(formatter)
-# log.addHandler(handler)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler(
+    f"logs/{datetime.now().strftime('web_scraping_%H_%M_%d_%m_%Y.log')}",
+    mode="a", 
+    encoding="utf-8"        
+)
+file_handler.setLevel(logging.INFO)
+formatter = logging.Formatter(
+    "[INFO] - %(asctime)s - %(levelname)s - %(message)s"
+)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 # Path: scraper.ipynb
 def get_soup(url, header_template):
@@ -47,6 +56,7 @@ def get_links_from_list(url_list, header_template):
 # Path: scraper.ipynb
 def scrape_site(url, header_template):
     links = list(set(get_links_from_list([url], header_template)))
+    logger.info(f'List of links {links}')
     return links
 
 # print(scrape_site("https://www.mom.gov.sg/"))
