@@ -2,24 +2,13 @@ import requests
 import warnings
 import os
 import logging
+from scripts import helpers as h
 from datetime import datetime
 from bs4 import BeautifulSoup
 
 #Logging
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler(
-    f"logs/{datetime.now().strftime('web_scraping_%H_%M_%d_%m_%Y.log')}",
-    mode="a", 
-    encoding="utf-8"        
-)
-file_handler.setLevel(logging.INFO)
-formatter = logging.Formatter(
-    "[INFO] - %(asctime)s - %(levelname)s - %(message)s"
-)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+logger = h.set_logging(logging.getLogger(__name__), __name__)
 
 # Path: scraper.ipynb
 def get_soup(url, header_template):

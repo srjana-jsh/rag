@@ -6,7 +6,7 @@ from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 #Constructing Chain
 chunking_interface = RecursiveCharacterTextSplitter
 embedding_model = OpenAIEmbeddings
-prompt_max = 48000
+prompt_max = 24000
 chunk_overlap = 0
 vectorstore_engine = "Finbot-embedding-2"
 llm_model = "text-davinci-002"
@@ -17,7 +17,7 @@ chunks_max = 15
 answer_max_tokens = 512
 source_documents = True
 debug_mode = True
-retrieval_kwargs = {"k": 4, "lambda_mult": 0.5, "fetch_k": 10}
+retrieval_kwargs = {"k": 4, "lambda_mult": 0.75, "fetch_k": 10}
 #Prompt Templates - to use chat history, context and question
 prompt_role = "financial advisor"
 qna_prompt_input = ["context", "question"]

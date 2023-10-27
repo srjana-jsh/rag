@@ -1,8 +1,10 @@
 import fitz
 import re
 import os
+import logging
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
+from datetime import datetime
 from typing import (
     AbstractSet,
     Any,
@@ -82,3 +84,21 @@ def display_chat_message(sender: str, message: str) -> None:
     elif sender == "bot":
         with st.chat_message(name="FinBot", avatar="🤖"):
             st.caption(message)
+
+def set_logging(logger, module_name)-> logging.Logger:        
+    """
+    Generates log with level INFO
+    """
+    logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler(
+        f"logs/{datetime.now().strftime(f'{module_name}_%d_%m_%Y_%H_%M.log')}",
+        mode="a", 
+        encoding="utf-8"        
+    )
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "[INFO] - %(asctime)s - %(levelname)s - %(message)s"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)   
+    return logger 

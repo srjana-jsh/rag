@@ -5,7 +5,9 @@ import re
 import importlib
 import langchain
 import logging
+import warnings
 from scripts import constants as c
+from scripts import helpers as h
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -36,6 +38,9 @@ from typing import (
     cast,
 )
 
+#Logging
+warnings.filterwarnings("ignore")
+logger = h.set_logging(logging.getLogger(__name__), __name__)
 
 class LangchainQnA:
     def __init__(
@@ -65,6 +70,9 @@ class LangchainQnA:
                 except:
                     unfetched_urls.append(url)
                     continue
+            logger.info(f'Proportion of unfetched urls : {len(unfetched_urls)/len(web_list)}')
+            logger.info(f'Unfetched urls : {unfetched_urls}')                    
+        logger.info(f'Length of loaded data : {len(loaded_data)}')                        
         return loaded_data, unfetched_urls
 
     def get_chunked_data(
@@ -83,6 +91,7 @@ class LangchainQnA:
                 chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
         chunked_data = data_splitter.split_documents(loaded_data)
+        logger.info(f'Number of chunks : {len(chunked_data)}')        
         return chunked_data
 
     def get_vectorstore(

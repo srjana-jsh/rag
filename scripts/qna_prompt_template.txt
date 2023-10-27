@@ -1,4 +1,4 @@
-Use the following context (delimited by <ctx></ctx>) to answer the question like a {role}:
+Use the following context (delimited by <ctx></ctx>) to answer the question like a {role}. If you don't know the answer, just say that you don't know, don't try to make up an answer. 
 ------
 <ctx>
 {context}

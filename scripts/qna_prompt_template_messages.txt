@@ -1,0 +1,4 @@
+System: You are a chatbot who answers questions like a {role}
+Human: Answer question using the following context
+Human: {context}
+Human: Question: {question}
