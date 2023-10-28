@@ -3,9 +3,13 @@ import sys
 import glob
 import re
 import langchain
-
+# for jupyter-notebook execution
 sys.path.append(os.path.join(os.getcwd(), "../scripts"))
 import constants as c
+import helpers as h
+#
+import warnings
+import logging
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -36,6 +40,9 @@ from typing import (
     cast,
 )
 
+#Logging
+warnings.filterwarnings("ignore")
+logger = h.set_logging(logging.getLogger(__name__), __name__)
 
 class LangchainQnA:
     def __init__(
@@ -54,13 +61,21 @@ class LangchainQnA:
     ) -> List[Document]:
         """ """
         loaded_data = []
+        unfetched_urls = []
         if len(pdf_list) > 0:
             for pdf in pdf_list:
                 loaded_data.extend(UnstructuredPDFLoader(pdf).load())
         if len(web_list) > 0:
-            for page in web_list:
-                loaded_data.extend(WebBaseLoader(page).load())
-        return loaded_data
+            for url in web_list:
+                try:
+                    loaded_data.extend(WebBaseLoader(url).load())
+                except:
+                    unfetched_urls.append(url)
+                    continue
+            logger.info(f'Proportion of unfetched urls : {len(unfetched_urls)/len(web_list)}')
+            logger.info(f'Unfetched urls : {unfetched_urls}')                    
+        logger.info(f'Length of loaded data : {len(loaded_data)}')                        
+        return loaded_data, unfetched_urls
 
     def get_chunked_data(
         self,
@@ -78,6 +93,7 @@ class LangchainQnA:
                 chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
         chunked_data = data_splitter.split_documents(loaded_data)
+        logger.info(f'Number of chunks : {len(chunked_data)}')        
         return chunked_data
 
     def get_vectorstore(
@@ -182,7 +198,7 @@ class LangchainQnA:
         Main function to the chain for answering questions
         """
         chunk_size = c.prompt_max // c.retrieval_kwargs["k"]
-        loaded_data = self.get_loaded_data(pdf_list, web_list)
+        loaded_data = self.get_loaded_data(pdf_list, web_list)[0]
         chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
         vectorstore = self.get_vectorstore(
             chunked_data, c.vectorstore_engine, c.chunks_max
@@ -213,3 +229,4 @@ if __name__ == "__main__":
     qna_chain = langchain_qna.main_function(
         pdf_list, web_list, qna_prompt_template, condense_question_template
     )
+    

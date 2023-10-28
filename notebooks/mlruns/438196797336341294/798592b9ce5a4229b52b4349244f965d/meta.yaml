@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/rachitjoshi/Documents/Finbot/notebooks/../mlruns/798592b9ce5a4229b52b4349244f965d/artifacts
+end_time: 1698483660274
+entry_point_name: ''
+experiment_id: '438196797336341294'
+lifecycle_stage: active
+run_id: 798592b9ce5a4229b52b4349244f965d
+run_name: params:(0.5, 256)
+run_uuid: 798592b9ce5a4229b52b4349244f965d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1698483660110
+status: 3
+tags: []
+user_id: rachitjoshi

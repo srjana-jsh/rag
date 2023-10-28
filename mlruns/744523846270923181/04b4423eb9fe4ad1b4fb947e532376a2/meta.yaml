@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/rachitjoshi/Documents/Finbot/notebooks/../mlruns/04b4423eb9fe4ad1b4fb947e532376a2/artifacts
+end_time: 1698483944941
+entry_point_name: ''
+experiment_id: '744523846270923181'
+lifecycle_stage: active
+run_id: 04b4423eb9fe4ad1b4fb947e532376a2
+run_name: script_qna_memory_jn
+run_uuid: 04b4423eb9fe4ad1b4fb947e532376a2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1698483944852
+status: 3
+tags: []
+user_id: rachitjoshi
