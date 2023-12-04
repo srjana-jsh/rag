@@ -2,8 +2,6 @@ import requests
 import warnings
 import os
 import logging
-from scripts import helpers as h
-from datetime import datetime
 from bs4 import BeautifulSoup
 
 #Logging
