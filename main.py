@@ -16,7 +16,7 @@ from scripts import helpers as h
 from scripts import scraper as s
 
 # Set OpenAI API parameters
-os.environ["OPENAI_API_KEY"] = "6cdb659e5a9d402e80c212fe8ea26483"
+os.environ["OPENAI_API_KEY"] = ""
 os.environ["OPENAI_API_TYPE"] = "azure"
 os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
 os.environ["OPENAI_API_BASE"] = "https://test-chatgpt-flomoney.openai.azure.com/"
