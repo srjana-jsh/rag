@@ -9,7 +9,6 @@ pdfminer.six
 pymupdf 
 streamlit
 BeautifulSoup4
-pysqlite3-binary
 lxml==4.9.3
 html5lib==1.1
 streamlit
