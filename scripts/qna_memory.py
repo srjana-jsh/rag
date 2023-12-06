@@ -191,7 +191,7 @@ class LangchainQnA:
 
     def main_function(
         self, pdf_list, web_list, qna_prompt_template, condense_question_template
-    ):
+    ) -> RetrievalQA:
         """
         Main function to the chain for answering questions
         """

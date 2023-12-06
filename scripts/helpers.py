@@ -4,6 +4,7 @@ import os
 import logging
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
+from langchain.docstore.document import Document
 from datetime import datetime
 from typing import (
     AbstractSet,
@@ -102,3 +103,8 @@ def set_logging(logger, module_name)-> logging.Logger:
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)   
     return logger 
+
+def get_metadata(Document) -> Dict:
+    """
+    """
+    pass  

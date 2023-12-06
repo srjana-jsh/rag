@@ -4,11 +4,10 @@ chromadb==0.3.29
 tiktoken
 unstructured
 pdf2image
-pdfminer
-pdfminer.six
+pdfminer-six
 pymupdf 
 streamlit
 BeautifulSoup4
-pysqlite3-binary
 lxml==4.9.3
 html5lib==1.1
+spacy
