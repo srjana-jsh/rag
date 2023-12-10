@@ -72,7 +72,7 @@ def save_uploaded_files(uploaded_files: str, save_folder: str) -> None:
         file_path = os.path.join(save_folder, file.name)
         with open(file_path, "wb") as f:
             f.write(file.read())
-        st.success(f"Saved file: {file_path}")
+        # st.success(f"Saved file: {file_path}")
 
 def display_chat_message(sender: str, message: str) -> None:
     """
@@ -102,3 +102,6 @@ def set_logging(logger, module_name)-> logging.Logger:
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)   
     return logger 
+
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions    
