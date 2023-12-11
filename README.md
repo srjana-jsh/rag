@@ -56,6 +56,6 @@ curl -X POST \
 #QnA 
 curl -X POST \
 	-H "Content-Type: application/json" \
-	-d '{"user_id":"flom_0", "chatbot_type": "finance", "question": "What are the advantages of investing in nvidia"}' \
+	-d '{"user_id":"flom_0", "chatbot_type": "finance", "question": "What are the advantages of investing in tesla"}' \
 	http://127.0.0.1:5000/qna
 ```
