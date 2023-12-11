@@ -72,7 +72,7 @@ elif input_option == "URL Upload":
     save_button = st.button("Save URL")
     #web pages for question-answering
     if save_button:
-        web_list = s.scrape_site(user_input, c.header_template)
+        web_list = s.scrape_site(user_input, c.HEADER_TEMPLATE)
 #chain for question-answering
 if len(web_list) > 0 or len(pdf_list) > 0:
     qna_with_memory = qna_m.LangchainQnA(c.chunking_interface, c.embedding_model)

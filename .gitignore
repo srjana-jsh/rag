@@ -121,3 +121,7 @@ credentials
 # General
 data/output/
 data/
+logs/
+mlruns/
+user_uploads/
+vector_db/

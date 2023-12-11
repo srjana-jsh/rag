@@ -6,8 +6,8 @@ import importlib
 import langchain
 import logging
 import warnings
-from scripts import constants as c
-from scripts import helpers as h
+import constants as c
+import helpers as h
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -195,28 +195,28 @@ class LangchainQnA:
         """
         Main function to the chain for answering questions
         """
-        chunk_size = c.prompt_max // c.retrieval_kwargs["k"]
+        chunk_size = c.PROMPT_MAX // c.RETRIEVAL_KWARGS["k"]
         loaded_data = self.get_loaded_data(pdf_list, web_list)[0]
-        chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.chunk_overlap)
+        chunked_data = self.get_chunked_data(loaded_data, chunk_size, c.CHUNK_OVERLAP)
         vectorstore = self.get_vectorstore(
-            chunked_data, c.vectorstore_engine, c.chunks_max
+            chunked_data, c.VECTORSTORE_ENGINE, c.CHUNKS_MAX
         )
         qna_chain = self.get_qna_chain(
             vectorstore,
-            c.llm_model,
-            c.llm_engine,
-            c.temperature,
-            c.search_type,
-            c.answer_max_tokens,
-            c.source_documents,
+            c.LLM_MODEL,
+            c.LLM_ENGINE,
+            c.TEMPERATURE,
+            c.SEARCH_TYPE,
+            c.ANSWER_MAX_TOKENS,
+            c.SOURCE_DOCUMENTS,
             qna_prompt_template,
-            c.qna_prompt_input,
-            c.prompt_role,
+            c.QNA_PROMPT_INPUT,
+            c.PROMPT_ROLE,
             condense_question_template,
-            c.condense_question_input,
-            c.history_tokens,
-            c.debug_mode,
-            **c.retrieval_kwargs,
+            c.CONDENSE_QUESTION_INPUT,
+            c.HISTORY_TOKENS,
+            c.DEBUG_MODE,
+            **c.RETRIEVAL_KWARGS,
         )
         return qna_chain
 

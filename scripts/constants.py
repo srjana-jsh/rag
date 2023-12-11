@@ -4,27 +4,27 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 
 #Constructing Chain
-chunking_interface = RecursiveCharacterTextSplitter
-embedding_model = OpenAIEmbeddings
-prompt_max = 24000
-chunk_overlap = 0
-vectorstore_engine = "Finbot-embedding-2"
-llm_model = "text-davinci-002"
-llm_engine = "finbot-gpt"
-temperature = 0
-search_type = "mmr"
-chunks_max = 15
-answer_max_tokens = 512
-source_documents = True
-debug_mode = True
-retrieval_kwargs = {"k": 4, "lambda_mult": 0.75, "fetch_k": 10}
+CHUNKING_INTERFACE = RecursiveCharacterTextSplitter
+EMBEDDING_MODEL = OpenAIEmbeddings
+PROMPT_MAX = 24000
+CHUNK_OVERLAP = 0
+VECTORSTORE_ENGINE = "Finbot-embedding-2"
+LLM_MODEL = "text-davinci-002"
+LLM_ENGINE = "finbot-gpt"
+TEMPERATURE = 0
+SEARCH_TYPE = "mmr"
+CHUNKS_MAX = 15
+ANSWER_MAX_TOKENS = 512
+SOURCE_DOCUMENTS = True
+DEBUG_MODE = True
+RETRIEVAL_KWARGS = {"k": 4, "lambda_mult": 0.75, "fetch_k": 10}
 #Prompt Templates - to use chat history, context and question
-prompt_role = "financial advisor"
-qna_prompt_input = ["context", "question"]
-condense_question_input = ["chat_history", "question"]
-history_tokens = 2000
+PROMPT_ROLE = "financial advisor"
+QNA_PROMPT_INPUT = ["context", "question"]
+CONDENSE_QUESTION_INPUT = ["chat_history", "question"]
+HISTORY_TOKENS = 2000
 #HTTP requests
-header_template = {
+HEADER_TEMPLATE = {
     "User-Agent": "",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*"
     ";q=0.8",

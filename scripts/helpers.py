@@ -2,7 +2,6 @@ import fitz
 import re
 import os
 import logging
-import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from datetime import datetime
 from typing import (
@@ -91,7 +90,7 @@ def set_logging(logger, module_name)-> logging.Logger:
     """
     logger.setLevel(logging.INFO)
     file_handler = logging.FileHandler(
-        f"logs/{datetime.now().strftime(f'{module_name}_%d_%m_%Y_%H_%M.log')}",
+        f"./logs/{datetime.now().strftime(f'{module_name}_%d_%m_%Y_%H_%M.log')}",
         mode="a", 
         encoding="utf-8"        
     )
@@ -103,5 +102,7 @@ def set_logging(logger, module_name)-> logging.Logger:
     logger.addHandler(file_handler)   
     return logger 
 
-def allowed_file(filename, allowed_extensions):
+def allowed_file(filename: str, allowed_extensions: List[str]) -> bool:
+    """   
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions    
