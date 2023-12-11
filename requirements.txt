@@ -11,5 +11,4 @@ streamlit
 BeautifulSoup4
 lxml==4.9.3
 html5lib==1.1
-streamlit
 Flask

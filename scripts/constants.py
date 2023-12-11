@@ -16,7 +16,7 @@ SEARCH_TYPE = "mmr"
 CHUNKS_MAX = 15
 ANSWER_MAX_TOKENS = 512
 SOURCE_DOCUMENTS = True
-DEBUG_MODE = True
+DEBUG_MODE = False
 RETRIEVAL_KWARGS = {"k": 4, "lambda_mult": 0.75, "fetch_k": 10}
 #Prompt Templates - to use chat history, context and question
 PROMPT_ROLE = "financial advisor"
