@@ -6,8 +6,8 @@ import importlib
 import langchain
 import logging
 import warnings
-import constants as c
-import helpers as h
+from scripts import constants as c
+from scripts import helpers as h
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.indexes import VectorstoreIndexCreator
@@ -37,6 +37,10 @@ from typing import (
     Union,
     cast,
 )
+from dotenv import load_dotenv
+
+#environment-variables
+load_dotenv()
 
 #Logging
 warnings.filterwarnings("ignore")
