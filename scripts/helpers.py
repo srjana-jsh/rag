@@ -36,20 +36,17 @@ def merge_pdfs(pdf_paths: List[str], output_path: str) -> None:
     pdf_document.save(output_path)
     pdf_document.close()
 
-
 def get_clean_content(input_string: str) -> str:
     """ """
     pattern = r"[^\w\s!?,.]|(?<=[^\?])\?"
     clean_string = re.sub(pattern, "", input_string)
     return clean_string
 
-
 def _text_splitter(chunk_size: int, chunk_overlap: int) -> TextSplitter:
     """ """
     return RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
-
 
 def extract_text_from_pdf(pdf_file: str) -> str:
     """ """
@@ -58,7 +55,6 @@ def extract_text_from_pdf(pdf_file: str) -> str:
     for page in pdf_reader.pages:
         text += page.extract_text()
     return text
-
 
 def save_uploaded_files(uploaded_files: str, save_folder: str) -> None:
     """
