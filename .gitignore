@@ -124,3 +124,5 @@ data/
 user_uploads/
 logs/
 mlruns/
+notebooks/logs/
+notebooks/mlruns/

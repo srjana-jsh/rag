@@ -14,12 +14,10 @@ from scripts import qna_memory as qna_m
 from scripts import constants as c
 from scripts import helpers as h
 from scripts import scraper as s
+from dotenv import load_dotenv
 
-# Set OpenAI API parameters
-os.environ["OPENAI_API_KEY"] = "6cdb659e5a9d402e80c212fe8ea26483"
-os.environ["OPENAI_API_TYPE"] = "azure"
-os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
-os.environ["OPENAI_API_BASE"] = "https://test-chatgpt-flomoney.openai.azure.com/"
+#environment-variables
+load_dotenv()
 
 st.title("User-input based Chatbot")
 

@@ -39,6 +39,10 @@ from typing import (
     Union,
     cast,
 )
+from dotenv import load_dotenv
+
+#environment-variables
+load_dotenv()
 
 #Logging
 warnings.filterwarnings("ignore")
