@@ -121,3 +121,6 @@ credentials
 # General
 data/output/
 data/
+user_uploads/
+logs/
+mlruns/
