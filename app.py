@@ -105,7 +105,8 @@ def set_qna():
 	file_directory = os.path.join(app.config['UPLOAD_FOLDER'], qna_details['chatbot_type'], qna_details['user_id'])
 	if not os.path.isdir(file_directory):
 		flash('You have not uploaded any content for this type of chatbot')
-		return redirect(request.url)
+		return jsonify(message=json.dumps('You have not uploaded any content for this type of chatbot'))
+		# return redirect(request.url)
 	else :	
 		#content for question-answering	
 		web_list = []
