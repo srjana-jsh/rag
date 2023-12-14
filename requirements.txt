@@ -10,6 +10,3 @@ BeautifulSoup4
 lxml==4.9.3
 html5lib==1.1
 Flask
-pypdf
-pikepdf
-opencv-python
