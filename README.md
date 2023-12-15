@@ -28,7 +28,7 @@ source .env
 -------------
 *Deploy endpoints on local*
 ```
-python scripts/app.py
+python app.py
 ```
 
 *Sample cURL Requests*

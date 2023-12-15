@@ -39,12 +39,13 @@ from typing import (
 )
 from dotenv import load_dotenv
 
-#environment-variables
+# environment-variables
 load_dotenv()
 
-#Logging
+# Logging
 warnings.filterwarnings("ignore")
 logger = h.set_logging(logging.getLogger(__name__), __name__)
+
 
 class LangchainQnA:
     def __init__(
@@ -74,9 +75,11 @@ class LangchainQnA:
                 except:
                     unfetched_urls.append(url)
                     continue
-            logger.info(f'Proportion of unfetched urls : {len(unfetched_urls)/len(web_list)}')
-            logger.info(f'Unfetched urls : {unfetched_urls}')                    
-        logger.info(f'Length of loaded data : {len(loaded_data)}')                        
+            logger.info(
+                f"Proportion of unfetched urls : {len(unfetched_urls)/len(web_list)}"
+            )
+            logger.info(f"Unfetched urls : {unfetched_urls}")
+        logger.info(f"Length of loaded data : {len(loaded_data)}")
         return loaded_data, unfetched_urls
 
     def get_chunked_data(
@@ -95,7 +98,7 @@ class LangchainQnA:
                 chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
         chunked_data = data_splitter.split_documents(loaded_data)
-        logger.info(f'Number of chunks : {len(chunked_data)}')        
+        logger.info(f"Number of chunks : {len(chunked_data)}")
         return chunked_data
 
     def get_vectorstore(
@@ -106,7 +109,7 @@ class LangchainQnA:
     ) -> Chroma:
         """ """
         logger.info(f'OPENAI_API_TYPE : {os.getenv("OPENAI_API_TYPE")}')
-        logger.info(f'Vectorstore Engine : {vectorstore_engine}')
+        logger.info(f"Vectorstore Engine : {vectorstore_engine}")
         if self.embedding_model == OpenAIEmbeddings:
             if os.getenv("OPENAI_API_TYPE") == "azure":
                 embedding_model = OpenAIEmbeddings(deployment=vectorstore_engine)
@@ -114,12 +117,12 @@ class LangchainQnA:
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:
             embedding_model = HuggingFaceHubEmbeddings()
-        logger.info(f'Embedding model : {embedding_model}')            
+        logger.info(f"Embedding model : {embedding_model}")
         for _ in range(0, len(chunked_data), chunks_max):
             vectorstore = Chroma.from_documents(
                 documents=chunked_data[_ : _ + chunks_max], embedding=embedding_model
             )
-        logger.info(f'Vectorstore created : {vectorstore}')         
+        logger.info(f"Vectorstore created : {vectorstore}")
         return vectorstore
 
     def get_qna_chain(
@@ -152,7 +155,7 @@ class LangchainQnA:
             )
         if os.getenv("OPENAI_API_TYPE") == "openai":
             base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
-        logger.info(f'Base LLM chosen : {base_llm}')            
+        logger.info(f"Base LLM chosen : {base_llm}")
         # custom prompt to pass to llm
         if qna_prompt_template is not None:
             qna_prompt = PromptTemplate.from_file(

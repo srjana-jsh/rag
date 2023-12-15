@@ -12,21 +12,22 @@ from flask import Flask, flash, request, redirect, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-#environment-variables
+# environment-variables
 load_dotenv()
 
-#Logging
+# Logging
 warnings.filterwarnings("ignore")
 logger = h.set_logging(logging.getLogger(__name__), __name__)
 
-#App
+# App
 app = Flask(__name__)
-app.config.from_object('scripts.config.AppConfig')
+app.config.from_object("scripts.config.AppConfig")
 app.secret_key = os.environ["FLASK_KEY"]
 
-@app.route('/vectordb', methods=['POST'])
+
+@app.route("/vectordb", methods=["POST"])
 def set_vectordb():
-	"""
+    """
 	Endpoint for uploading documents and URLs for a user id
 
 	Sample cURL request 
@@ -50,43 +51,53 @@ def set_vectordb():
 	     -F "files[]=" \
 	     http://127.0.0.1:5000/vectordb
 	"""
-	user_id = request.form.get('user_id')
-	chatbot_type = request.form.get('chatbot_type')	
-	upload_type = request.form.get('upload_type')
+    user_id = request.form.get("user_id")
+    chatbot_type = request.form.get("chatbot_type")
+    upload_type = request.form.get("upload_type")
 
-	file_directory = os.path.join(app.config['UPLOAD_FOLDER'], chatbot_type, user_id)
-	if not os.path.isdir(file_directory):
-		os.mkdir(file_directory)	
+    file_directory = os.path.join(app.config["UPLOAD_FOLDER"], chatbot_type, user_id)
+    if not os.path.isdir(file_directory):
+        os.mkdir(file_directory)
 
-	if upload_type == 'pdf':
-		if 'files[]' not in request.files:
-		    flash('No files provided')
-		    return redirect(request.url)	 
+    if upload_type == "pdf":
+        if "files[]" not in request.files:
+            flash("No files provided")
+            return redirect(request.url)
 
-		files = request.files.getlist('files[]')
-		if all([h.allowed_file(_.filename, app.config['ALLOWED_EXTENSIONS']) for _ in files]):	
-			for file in files:
-				filename = secure_filename(file.filename)				
-				file.save(os.path.join(file_directory, filename))					
-			flash('File(s) successfully uploaded')
-			return redirect('/')		        
-		else:
-			return jsonify(message=f"Allowed file types are: {', '.join(app.config['ALLOWED_EXTENSIONS'])}")
+        files = request.files.getlist("files[]")
+        if all(
+            [
+                h.allowed_file(_.filename, app.config["ALLOWED_EXTENSIONS"])
+                for _ in files
+            ]
+        ):
+            for file in files:
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(file_directory, filename))
+            flash("File(s) successfully uploaded")
+            return redirect("/")
+        else:
+            return jsonify(
+                message=json.dumps(
+                    f"Allowed file types are {', '.join(app.config['ALLOWED_EXTENSIONS'])}"
+                )
+            )
 
-	if upload_type == 'url':
-		web_list = s.scrape_site(request.form.get('url'), c.HEADER_TEMPLATE)
-		if len(web_list)>0:
-			with open(os.path.join(file_directory, 'web_test.txt'), "w") as output:
-				output.write(str(web_list))
-			flash('URL successfully uploaded')
-			return redirect('/')		    	
-		else:
-		    flash('Site cannot be scraped')
-		    return redirect(request.url)			
+    if upload_type == "url":
+        web_list = s.scrape_site(request.form.get("url"), c.HEADER_TEMPLATE)
+        if len(web_list) > 0:
+            with open(os.path.join(file_directory, "web_test.txt"), "w") as output:
+                output.write(str(web_list))
+            flash("URL successfully uploaded")
+            return redirect("/")
+        else:
+            flash("Site cannot be scraped")
+            return redirect(request.url)
 
-@app.route('/qna', methods=['POST'])
+
+@app.route("/qna", methods=["POST"])
 def set_qna():
-	"""
+    """
 	Endpoint for answering a question based on below user inputs in API call:
 	{"user_id":"", "chatbot_type": "", "question": ""}	
 
@@ -101,23 +112,33 @@ def set_qna():
 	-------
 	{"message" : "<Answer to question>"}		
 	"""
-	qna_details = request.get_json()
-	file_directory = os.path.join(app.config['UPLOAD_FOLDER'], qna_details['chatbot_type'], qna_details['user_id'])
-	if not os.path.isdir(file_directory):
-		flash('You have not uploaded any content for this type of chatbot')
-		return jsonify(message=json.dumps('You have not uploaded any content for this type of chatbot'))
-		# return redirect(request.url)
-	else :	
-		#content for question-answering	
-		web_list = []
-		pdf_list = [_ for _ in glob.glob(f'{file_directory}/*.pdf')]
-		qna_with_memory = qna_m.LangchainQnA(c.CHUNKING_INTERFACE, c.EMBEDDING_MODEL)
-		qna_chain = qna_with_memory.main_function(
-			pdf_list, web_list, app.config['PROMPT_TEMPLATE'], app.config['CONDENSE_TEMPLATE']
-		)
-		answer = qna_chain({"question": qna_details["question"]})["answer"]
-		logger.info(f'Answer to question : {qna_details["question"]} is : \n {answer}')
-		return jsonify(message=json.dumps(answer))
+    qna_details = request.get_json()
+    file_directory = os.path.join(
+        app.config["UPLOAD_FOLDER"], qna_details["chatbot_type"], qna_details["user_id"]
+    )
+    if not os.path.isdir(file_directory):
+        flash("You have not uploaded any content for this type of chatbot")
+        return jsonify(
+            message=json.dumps(
+                "You have not uploaded any content for this type of chatbot"
+            )
+        )
+        # return redirect(request.url)
+    else:
+        # content for question-answering
+        web_list = []
+        pdf_list = [_ for _ in glob.glob(f"{file_directory}/*.pdf")]
+        qna_with_memory = qna_m.LangchainQnA(c.CHUNKING_INTERFACE, c.EMBEDDING_MODEL)
+        qna_chain = qna_with_memory.main_function(
+            pdf_list,
+            web_list,
+            app.config["PROMPT_TEMPLATE"],
+            app.config["CONDENSE_TEMPLATE"],
+        )
+        answer = qna_chain({"question": qna_details["question"]})["answer"]
+        logger.info(f'Answer to question : {qna_details["question"]} is : \n {answer}')
+        return jsonify(message=json.dumps(answer))
+
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=False, threaded=True)		        	
+    app.run(host="0.0.0.0", debug=False, threaded=True)

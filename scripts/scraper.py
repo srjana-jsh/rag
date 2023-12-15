@@ -6,7 +6,7 @@ from scripts import helpers as h
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-#Logging
+# Logging
 warnings.filterwarnings("ignore")
 logger = h.set_logging(logging.getLogger(__name__), __name__)
 
@@ -18,6 +18,7 @@ def get_soup(url, header_template):
     response = requests.get(url, headers=header_template)
     soup = BeautifulSoup(response.text, "html5lib")
     return soup
+
 
 # Path: scraper.ipynb
 def get_links(url, header_template):
@@ -32,6 +33,7 @@ def get_links(url, header_template):
         ] != "http" else links.append(link.get("href"))
     return links
 
+
 # Path: scraper.ipynb
 def get_links_from_list(url_list, header_template):
     """
@@ -42,10 +44,12 @@ def get_links_from_list(url_list, header_template):
         links.extend(get_links(url, header_template))
     return links
 
+
 # Path: scraper.ipynb
 def scrape_site(url, header_template):
     links = list(set(get_links_from_list([url], header_template)))
-    logger.info(f'List of links {links}')
+    logger.info(f"List of links {links}")
     return links
+
 
 # print(scrape_site("https://www.mom.gov.sg/"))
