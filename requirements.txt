@@ -10,3 +10,7 @@ BeautifulSoup4
 lxml==4.9.3
 html5lib==1.1
 Flask
+pikepdf
+pypdf
+opencv-python-headless
+unstructured.pytesseract

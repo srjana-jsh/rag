@@ -105,6 +105,8 @@ class LangchainQnA:
         chunks_max: int,
     ) -> Chroma:
         """ """
+        logger.info(f'OPENAI_API_TYPE : {os.getenv("OPENAI_API_TYPE")}')
+        logger.info(f'Vectorstore Engine : {vectorstore_engine}')
         if self.embedding_model == OpenAIEmbeddings:
             if os.getenv("OPENAI_API_TYPE") == "azure":
                 embedding_model = OpenAIEmbeddings(deployment=vectorstore_engine)
@@ -112,10 +114,12 @@ class LangchainQnA:
                 embedding_model = OpenAIEmbeddings()
         if self.embedding_model == HuggingFaceHubEmbeddings:
             embedding_model = HuggingFaceHubEmbeddings()
+        logger.info(f'Embedding model : {embedding_model}')            
         for _ in range(0, len(chunked_data), chunks_max):
             vectorstore = Chroma.from_documents(
                 documents=chunked_data[_ : _ + chunks_max], embedding=embedding_model
             )
+        logger.info(f'Vectorstore created : {vectorstore}')         
         return vectorstore
 
     def get_qna_chain(
@@ -137,7 +141,7 @@ class LangchainQnA:
         **retrieval_kwargs: Any,
     ) -> RetrievalQA:
         """ """
-        langchain.debug = True
+        langchain.debug = debug_mode
         # llm to use
         if os.getenv("OPENAI_API_TYPE") == "azure":
             base_llm = AzureOpenAI(
@@ -148,6 +152,7 @@ class LangchainQnA:
             )
         if os.getenv("OPENAI_API_TYPE") == "openai":
             base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
+        logger.info(f'Base LLM chosen : {base_llm}')            
         # custom prompt to pass to llm
         if qna_prompt_template is not None:
             qna_prompt = PromptTemplate.from_file(
