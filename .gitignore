@@ -34,6 +34,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+*[Ll]ogs/
 
 # Unit test / coverage reports
 htmlcov/
@@ -119,9 +120,8 @@ credentials
 .DS_Store
 
 # General
-data/output/
-data/
-logs/
-mlruns/
+[Dd]ata/
+*[Mm]lruns/
 user_uploads/
 vector_db/
+*.chroma

@@ -6,6 +6,9 @@ import importlib
 import langchain
 import logging
 import warnings
+# sys.path.append(os.path.join(os.getcwd(), "../scripts"))
+# import constants as c
+# import helpers as h
 from scripts import constants as c
 from scripts import helpers as h
 from langchain.document_loaders import WebBaseLoader, UnstructuredPDFLoader
@@ -128,16 +131,16 @@ class LangchainQnA:
     def get_qna_chain(
         self,
         vectorstore: Chroma,
+        qna_prompt_template: str,
+        condense_question_template: str,
         llm_model: str,
         llm_engine: str,
         temperature: int,
         search_type: str,
         answer_max_tokens: int,
-        source_documents: bool,
-        qna_prompt_template: str,
+        source_documents: bool,       
         qna_prompt_input: List[str],
         prompt_role: str,
-        condense_question_template: str,
         condense_question_input: List[str],
         history_tokens: int,
         debug_mode: bool,
@@ -154,7 +157,7 @@ class LangchainQnA:
                 max_tokens=answer_max_tokens,
             )
         if os.getenv("OPENAI_API_TYPE") == "openai":
-            base_llm = ChatOpenAI(model_name=llm_model, temperature=temperature)
+            base_llm = ChatOpenAI(temperature=temperature)
         logger.info(f"Base LLM chosen : {base_llm}")
         # custom prompt to pass to llm
         if qna_prompt_template is not None:
@@ -215,16 +218,16 @@ class LangchainQnA:
         )
         qna_chain = self.get_qna_chain(
             vectorstore,
+            qna_prompt_template,
+            condense_question_template,
             c.LLM_MODEL,
             c.LLM_ENGINE,
             c.TEMPERATURE,
             c.SEARCH_TYPE,
             c.ANSWER_MAX_TOKENS,
             c.SOURCE_DOCUMENTS,
-            qna_prompt_template,
             c.QNA_PROMPT_INPUT,
             c.PROMPT_ROLE,
-            condense_question_template,
             c.CONDENSE_QUESTION_INPUT,
             c.HISTORY_TOKENS,
             c.DEBUG_MODE,

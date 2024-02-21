@@ -54,7 +54,7 @@ def set_vectordb():
     user_id = request.form.get("user_id")
     chatbot_type = request.form.get("chatbot_type")
     upload_type = request.form.get("upload_type")
-
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     file_directory = os.path.join(app.config["UPLOAD_FOLDER"], chatbot_type, user_id)
     if not os.path.isdir(file_directory):
         os.mkdir(file_directory)
@@ -84,7 +84,7 @@ def set_vectordb():
             )
 
     if upload_type == "url":
-        web_list = s.scrape_site(request.form.get("url"), c.HEADER_TEMPLATE)
+        web_list = s.scrape_site(request.form.get("url"), app.config["HEADER_TEMPLATE"])
         if len(web_list) > 0:
             with open(os.path.join(file_directory, "web_test.txt"), "w") as output:
                 output.write(str(web_list))

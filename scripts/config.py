@@ -11,6 +11,16 @@ class AppConfig:
     CONDENSE_TEMPLATE = os.path.join(
         os.getcwd(), "scripts/condense_question_template.txt"
     )
+    HEADER_TEMPLATE = {
+        "User-Agent": "",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*"
+        ";q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Referer": "https://www.google.com/",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }    
 
 
 class ChainConfig:
@@ -35,16 +45,3 @@ class PromptConfig:
     QNA_PROMPT_INPUT = ["context", "question"]
     CONDENSE_QUESTION_INPUT = ["chat_history", "question"]
     HISTORY_TOKENS = 2000
-
-
-class ScrapeConfig:
-    HEADER_TEMPLATE = {
-        "User-Agent": "",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*"
-        ";q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Referer": "https://www.google.com/",
-        "DNT": "1",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-    }

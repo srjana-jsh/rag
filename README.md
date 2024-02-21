@@ -10,17 +10,17 @@ A RAG pipeline to answer questions based on a set of user provided documents or 
  ```
 
 
-### Credentials
+### Environment
 ---------------
 Add **OPENAI_API_KEY** and **FLASK_KEY**
 
 ```
 touch .env
-FLASK_KEY="<flask-key>"
-OPENAI_API_KEY="<you-api-key>"
-OPENAI_API_TYPE="azure"
-OPENAI_API_VERSION="2023-03-15-preview"
-OPENAI_API_BASE="https://test-chatgpt-flomoney.openai.azure.com/"
+OPENAI_API_KEY="<your_open_api_key>"
+OPENAI_API_TYPE="openai"
+FLASK_KEY="rag"
+FLASK_APP=app.py
+FLASK_DEBUG=1
 source .env
 ```
 
@@ -28,7 +28,7 @@ source .env
 -------------
 *Deploy endpoints on local*
 ```
-python app.py
+flask run
 ```
 
 *Sample cURL Requests*
