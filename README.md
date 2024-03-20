@@ -1,6 +1,6 @@
-# Finbot
+# Web QnA
 ---------------------
-A RAG pipeline to answer questions based on a set of user provided documents or url
+A pipeline to answer questions based on information present in website(s)
 
 
 ### Setup
@@ -21,6 +21,7 @@ OPENAI_API_TYPE="openai"
 FLASK_KEY="rag"
 FLASK_APP=app.py
 FLASK_DEBUG=1
+FLASK_RUN_HOST=0.0.0.0
 source .env
 ```
 

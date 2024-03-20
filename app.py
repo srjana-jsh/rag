@@ -5,7 +5,7 @@ import glob
 import warnings
 import logging
 from scripts import qna_memory as qna_m
-from scripts import constants as c
+from scripts.config import ChainConfig as c
 from scripts import helpers as h
 from scripts import scraper as s
 from flask import Flask, flash, request, redirect, jsonify

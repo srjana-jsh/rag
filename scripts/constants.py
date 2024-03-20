@@ -4,8 +4,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter, TextSplitter
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceHubEmbeddings
 
 # Constructing Chain
-CHUNKING_INTERFACE = RecursiveCharacterTextSplitter
-EMBEDDING_MODEL = OpenAIEmbeddings
+# CHUNKING_INTERFACE = RecursiveCharacterTextSplitter
+# EMBEDDING_MODEL = OpenAIEmbeddings
 PROMPT_MAX = 24000
 CHUNK_OVERLAP = 0
 VECTORSTORE_ENGINE = "Finbot-embedding-2"

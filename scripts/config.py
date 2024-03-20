@@ -41,7 +41,7 @@ class ChainConfig:
 
 
 class PromptConfig:
-    PROMPT_ROLE = "financial advisor"
+    PROMPT_ROLE = "advisor"
     QNA_PROMPT_INPUT = ["context", "question"]
     CONDENSE_QUESTION_INPUT = ["chat_history", "question"]
     HISTORY_TOKENS = 2000
